@@ -12,7 +12,7 @@ namespace TTS.PingKing {
         private int[] packetInfo = new int[6];
 
         /// <summary>
-        /// Constructor assigns the IPv4 address to be send an ICMP ping to the pingAddress class field
+        /// Constructor assigns the IPv4 address to class field
         /// </summary>
         /// <param name="address">IPv4 address in string form</param>
         public ICMP(string address)
@@ -24,7 +24,7 @@ namespace TTS.PingKing {
         /// <summary>
         /// Displays results of individual ICMP pings
         /// </summary>
-        /// <param name="reply">PingRely object containing ICMP results</param>
+        /// <param name="reply">PingReply object containing ICMP results</param>
         public void DisplayReply(PingReply reply)
         {
             Console.WriteLine("Reply from address: {0} time={1}ms TTL={2} buffer={3}",
@@ -35,12 +35,13 @@ namespace TTS.PingKing {
         /// Displays statistical information about batch of ICMP pings
         /// </summary>
         /// <param name="pingData">Array with packet info from ICMP ping batch</param>
-        public void DisplayStats(int[] pingData)
+        public void DisplayStats()
         {
-            Console.WriteLine("Ping statistics for {0}", pingAddress);
-            Console.WriteLine("Packets: Sent = {0}, Recieved = {1}, Lost = {2} ({3}% loss)", packetInfo[0], packetInfo[1], packetInfo[2], (packetInfo[2] / packetInfo[0]) * 100);
+            Console.WriteLine("\nPing statistics for {0}", pingAddress);
+            Console.WriteLine("\tPackets: Sent = {0}, Recieved = {1}, Lost = {2} ({3}% loss)", 
+                packetInfo[0], packetInfo[1], packetInfo[2], (packetInfo[2] / packetInfo[0]) * 100);
             Console.WriteLine("Round Trip Times:");
-            Console.WriteLine("Min = {0}ms, Max = {1}ms, Avg = {2}ms", packetInfo[3], packetInfo[4], packetInfo[5]);
+            Console.WriteLine("\tMin = {0}ms, Max = {1}ms, Avg = {2}ms", packetInfo[3], packetInfo[4], packetInfo[5]);
         }
 
         /// <summary>
@@ -64,17 +65,19 @@ namespace TTS.PingKing {
                 if (isValid)
                 {
                     packetInfo[1]++;
-
                     StatsTracker(reply);
-
                     DisplayReply(reply);                    
                 }
             }
 
             packetInfo[5] = packetInfo[5] / 4;
-            DisplayStats(packetInfo);
+            DisplayStats();
         }
 
+        /// <summary>
+        /// Updates packetInfo with the data from the lastest PingReply
+        /// </summary>
+        /// <param name="reply">Latest PingReply</param>
         public void StatsTracker(PingReply reply)
         {
             if ((int)reply.RoundtripTime < packetInfo[3])
@@ -84,6 +87,11 @@ namespace TTS.PingKing {
             packetInfo[5] += (int)reply.RoundtripTime;
         }
 
+        /// <summary>
+        /// Validates whether the lastest PingReply was successful and outputs to user accordingly
+        /// </summary>
+        /// <param name="reply">Latest PingReply</param>
+        /// <returns></returns>
         public Boolean ValidateReply(PingReply reply)
         {
             if (reply == null)
