@@ -59,18 +59,29 @@ namespace TTS.PingKing {
             for (int i = 0; i < 4; i++)
             {
                 packetInfo[0]++;
-                reply = icmp.Send(pingAddress, 3000, Encoding.ASCII.GetBytes(buffer), options);
-                Boolean isValid = ValidateReply(reply);
-
-                if (isValid)
+                try
                 {
-                    packetInfo[1]++;
-                    StatsTracker(reply);
-                    DisplayReply(reply);                    
+                    reply = icmp.Send(pingAddress, 3000, Encoding.ASCII.GetBytes(buffer), options);
+
+                    Boolean isValid = ValidateReply(reply);
+
+                    if (isValid)
+                    {
+                        packetInfo[1]++;
+                        StatsTracker(reply);
+                        DisplayReply(reply);
+                    }
+                } catch (PingException pingE)
+                {
+                    Console.WriteLine("\nINVALID USER INPUT\n");
+                    Console.WriteLine(pingE.ToString());
+                    packetInfo[2]++;
+                    packetInfo[3] = 0;
+                    break;
                 }
             }
 
-            packetInfo[5] = packetInfo[5] / 4;
+            packetInfo[5] = packetInfo[5] / packetInfo[0];
             DisplayStats();
         }
 
