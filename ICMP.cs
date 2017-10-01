@@ -22,47 +22,6 @@ namespace TTS.PingKing {
         }
 
         /// <summary>
-        /// Sends and listens for response from an ICMP ping then displays the results
-        /// </summary>
-        public void SendICMP()
-        {
-            Ping icmp = new Ping();
-            PingOptions options = new PingOptions();
-            PingReply reply;
-
-            options.DontFragment = true;
-            string buffer = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-
-            for (int i = 0; i < 4; i++)
-            {
-                packetInfo[0]++;
-                reply = icmp.Send(pingAddress, 120, Encoding.ASCII.GetBytes(buffer), options);
-
-                if (reply == null)
-                {
-                    packetInfo[2]++;
-                    Console.WriteLine("ICMP Ping Failed!");
-                }
-                else
-                {
-                    packetInfo[1]++;
-
-                    if (reply.RoundtripTime < packetInfo[3])
-                        packetInfo[3] = (int)reply.RoundtripTime;
-                    if (reply.RoundtripTime > packetInfo[4])
-                        packetInfo[4] = (int)reply.RoundtripTime;
-
-                    packetInfo[5] += (int)reply.RoundtripTime;
-                }
-
-                DisplayReply(reply);
-            }
-
-            packetInfo[5] = packetInfo[5] / 4;
-            DisplayStats(packetInfo);
-        }
-
-        /// <summary>
         /// Displays results of individual ICMP pings
         /// </summary>
         /// <param name="reply">PingRely object containing ICMP results</param>
@@ -82,6 +41,75 @@ namespace TTS.PingKing {
             Console.WriteLine("Packets: Sent = {0}, Recieved = {1}, Lost = {2} ({3}% loss)", packetInfo[0], packetInfo[1], packetInfo[2], (packetInfo[2] / packetInfo[0]) * 100);
             Console.WriteLine("Round Trip Times:");
             Console.WriteLine("Min = {0}ms, Max = {1}ms, Avg = {2}ms", packetInfo[3], packetInfo[4], packetInfo[5]);
+        }
+
+        /// <summary>
+        /// Sends and listens for response from an ICMP ping then displays the results
+        /// </summary>
+        public void SendICMP()
+        {
+            Ping icmp = new Ping();
+            PingOptions options = new PingOptions();
+            PingReply reply;
+
+            options.DontFragment = true;
+            string buffer = "Winter is coming. - House Stark.";
+
+            for (int i = 0; i < 4; i++)
+            {
+                packetInfo[0]++;
+                reply = icmp.Send(pingAddress, 3000, Encoding.ASCII.GetBytes(buffer), options);
+                Boolean isValid = ValidateReply(reply);
+
+                if (isValid)
+                {
+                    packetInfo[1]++;
+
+                    StatsTracker(reply);
+
+                    DisplayReply(reply);                    
+                }
+            }
+
+            packetInfo[5] = packetInfo[5] / 4;
+            DisplayStats(packetInfo);
+        }
+
+        public void StatsTracker(PingReply reply)
+        {
+            if ((int)reply.RoundtripTime < packetInfo[3])
+                packetInfo[3] = (int)reply.RoundtripTime;
+            if ((int)reply.RoundtripTime > packetInfo[4])
+                packetInfo[4] = (int)reply.RoundtripTime;
+            packetInfo[5] += (int)reply.RoundtripTime;
+        }
+
+        public Boolean ValidateReply(PingReply reply)
+        {
+            if (reply == null)
+            {
+                packetInfo[2]++;
+                Console.WriteLine("ICMP PingReply is null");
+                return false;
+            }
+            else if (reply.Status == IPStatus.TimedOut)
+            {
+                packetInfo[2]++;
+                StatsTracker(reply);
+                Console.WriteLine("Ping timed out.");
+                return false;
+            }
+            else if(reply.Status != IPStatus.Success) 
+            {
+                packetInfo[2]++;
+                StatsTracker(reply);
+                Console.WriteLine("Derp Derp. Something went wrong.");
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
     }
 }
