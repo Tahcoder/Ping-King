@@ -22,7 +22,7 @@ namespace TTS.PingKing {
         }
 
         /// <summary>
-        /// 
+        /// Sends and listens for response from an ICMP ping then displays the results
         /// </summary>
         public void SendICMP()
         {
@@ -62,22 +62,22 @@ namespace TTS.PingKing {
             DisplayStats(packetInfo);
         }
 
+        /// <summary>
+        /// Displays results of individual ICMP pings
+        /// </summary>
+        /// <param name="reply">PingRely object containing ICMP results</param>
         public void DisplayReply(PingReply reply)
         {
             Console.WriteLine("Reply from address: {0} time={1}ms TTL={2} buffer={3}",
                 reply.Address.ToString(), reply.RoundtripTime, reply.Options.Ttl, reply.Buffer.Length);
         }
 
+        /// <summary>
+        /// Displays statistical information about batch of ICMP pings
+        /// </summary>
+        /// <param name="pingData">Array with packet info from ICMP ping batch</param>
         public void DisplayStats(int[] pingData)
         {
-            /*
-           int totalPackets = 0,
-               packetsRecieved = 0,
-               packetsLost = 0,
-               minTrip = 9999,
-               maxTrip = 0,
-               averageTrip = 0;
-           */
             Console.WriteLine("Ping statistics for {0}", pingAddress);
             Console.WriteLine("Packets: Sent = {0}, Recieved = {1}, Lost = {2} ({3}% loss)", packetInfo[0], packetInfo[1], packetInfo[2], (packetInfo[2] / packetInfo[0]) * 100);
             Console.WriteLine("Round Trip Times:");
